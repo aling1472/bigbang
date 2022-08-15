@@ -1,13 +1,13 @@
 package com.tencent.wxcloudrun.enums;
 
-public enum DeviceStatus {
+public enum DeviceStatusEnum {
     STANDBY("standby"),
     WORKING("working"),
     UNKNOWN("unknown");
 
     private final String status;
 
-    DeviceStatus(String status) {
+    DeviceStatusEnum(String status) {
         this.status = status;
     }
 

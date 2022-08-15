@@ -5,8 +5,10 @@ import com.tencent.wxcloudrun.dto.DevicesStatusRequest;
 import com.tencent.wxcloudrun.model.Device;
 import com.tencent.wxcloudrun.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,5 +28,11 @@ public class DeviceController {
         }
         List<Device> deviceList = deviceService.getList(devicesStatusRequest.getCity(), devicesStatusRequest.getDepartment());
         return ApiResponse.ok(deviceList);
+    }
+
+    @GetMapping(value="/api/test")
+    public ApiResponse test(){
+        deviceService.getStatus("1");
+        return ApiResponse.ok();
     }
 }
