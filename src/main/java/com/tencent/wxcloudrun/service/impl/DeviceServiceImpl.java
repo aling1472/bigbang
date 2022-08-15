@@ -49,7 +49,7 @@ public class DeviceServiceImpl implements DeviceService {
         HttpHeaders httpHeaders = getHttpHeaders();
         httpHeaders.set("Authorization", applicationProperties.getAuthorization());
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(linkedMultiValueMap, httpHeaders);
-        JSONObject result = restTemplate.postForObject(applicationProperties.getStatusUrl(), httpEntity, JSONObject.class);
+        String result = restTemplate.postForObject(applicationProperties.getStatusUrl(), httpEntity, String.class);
         System.out.println(result);
         return null;
     }
