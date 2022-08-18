@@ -152,9 +152,12 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
         HttpHeaders httpHeaders = getHttpHeaders();
         httpHeaders.set("Authorization", authorization);
         try {
+            LOG.info("query: {}", linkedMultiValueMap);
+            LOG.info("header: {}", httpHeaders);
+            LOG.info("url: {}", applicationProperties.getStatusUrl());
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(linkedMultiValueMap, httpHeaders);
             String result = restTemplate.postForObject(applicationProperties.getStatusUrl(), httpEntity, String.class);
-            LOG.debug("调用设备API，返回消息：{}", result);
+            LOG.info("调用设备API，返回消息：{}", result);
             DeviceApiResponse deviceApiResponse = objectMapper.readValue(result, DeviceApiResponse.class);
             if (!API_CODE_NORMAL.equals(deviceApiResponse.getCode())) {
                 // TODO 状态异常 发钉钉消息
@@ -173,6 +176,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
                 this.saveBatch(devices);
             }
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
