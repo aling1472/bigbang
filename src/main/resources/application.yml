@@ -18,5 +18,7 @@ mybatis:
 
 application:
   config:
-    authorization: eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eJyrVsosLlayUiovL9fLKE0sKk2sStZLzs91dFTSUcpMLFGyMjQzMzA1NzQwMtdRKi5NAqo1NLU0sDAxMre0NFGqBQCctxJc.jMocZDGptjBtbriGHYAVyQ-0JoJBmRBe9BD2p1rAvgqT1kJUg9QyU-b4ykobk30iKMzyCh7YXVLjUjsYirj8XQ
-    status-url: https://api.huaruanzc.net/backend-api/deviceManagerController.do?getBindedDeviceList
+    authorization: ${DEVICE_API_AUTH}
+    status-url: ${DEVICE_STATUS_URL}
+    ding-url: ${DING_TALK_URL}
+    app-secret: ${DING_TALK_SECRET}

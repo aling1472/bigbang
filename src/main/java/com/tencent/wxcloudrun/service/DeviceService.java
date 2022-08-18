@@ -1,13 +1,23 @@
 package com.tencent.wxcloudrun.service;
 
-import com.tencent.wxcloudrun.dvo.DeviceStatus;
 import com.tencent.wxcloudrun.model.Device;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.util.List;
 
 public interface DeviceService {
 
+    String API_CODE_NORMAL = "0";
+
+    String DING_TALK_CODE_NORMAL = "0";
+
+    String API_LINE_STATUS_STANDBY = "未工作";
+
+
+
     List<Device> getList(String city, Integer department);
 
-    DeviceStatus getStatus(String id);
+    Device getStatus(String id);
+
+    void dingTalkCommand(String timestamp, String sign, JSONObject body);
 }

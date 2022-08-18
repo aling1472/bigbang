@@ -11,4 +11,8 @@ public class ApplicationProperties {
     public String authorization;
 
     public String statusUrl;
+
+    public String dingUrl;
+
+    public String appSecret;
 }

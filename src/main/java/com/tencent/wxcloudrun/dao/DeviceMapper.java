@@ -11,4 +11,8 @@ import java.util.List;
 public interface DeviceMapper {
     @Select("select * from device where city = #{city} and department = #{department}")
     List<Device> findByCityAndDepartment(@Param("city")String city, @Param("department")Integer department);
+
+    void saveAll(List<Device> devices);
+
+    Device findBySn(String sn);
 }

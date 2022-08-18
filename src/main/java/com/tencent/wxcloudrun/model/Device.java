@@ -19,7 +19,7 @@ public class Device implements Serializable {
 
     private Integer department;
 
-    private Integer sequence;
+    private String sn;
 
     private String status;
 
