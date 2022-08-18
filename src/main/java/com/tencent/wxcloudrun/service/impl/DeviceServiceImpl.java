@@ -45,10 +45,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
     @Autowired
     ApplicationProperties applicationProperties;
 
-
-    private String authorization;
-
-
     ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Override
@@ -150,7 +146,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
         linkedMultiValueMap.add("startInput", "");
         linkedMultiValueMap.add("endInput", "");
         HttpHeaders httpHeaders = getHttpHeaders();
-        httpHeaders.set("Authorization", authorization);
+        httpHeaders.set("Authorization", applicationProperties.getAuthorization());
         try {
             LOG.info("query: {}", linkedMultiValueMap);
             LOG.info("header: {}", httpHeaders);
