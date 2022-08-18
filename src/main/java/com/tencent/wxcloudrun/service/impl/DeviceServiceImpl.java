@@ -1,5 +1,6 @@
 package com.tencent.wxcloudrun.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -35,7 +37,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class DeviceServiceImpl implements DeviceService {
+public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implements DeviceService {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceServiceImpl.class);
     @Autowired
     DeviceMapper deviceMapper;
@@ -58,57 +60,77 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public Device getStatus(String id) {
-        return deviceMapper.findBySn(id);
+    public Device getStatus(int id) {
+        syncStatus();
+        return this.getById(id);
     }
 
-    @Override
-    public void dingTalkCommand(String timestamp, String sign, JSONObject body) {
-        try{
+    private String dingTalkSign(String timestamp) {
+        try {
             String stringToSign = timestamp + "\n" + applicationProperties.getAppSecret();
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(applicationProperties.getAppSecret().getBytes("UTF-8"), "HmacSHA256"));
             byte[] signData = mac.doFinal(stringToSign.getBytes("UTF-8"));
-            String signTarget = new String(Base64.encodeBase64(signData));
-            if(Objects.isNull(sign) || !sign.equals(signTarget)) {
+            return URLEncoder.encode(new String(Base64.encodeBase64(signData)), "UTF-8");
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
+            LOG.error("计算签名中发送错误: {}", e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void dingTalkCommand(String timestamp, String sign, JSONObject body) {
+        try {
+            String signTarget = dingTalkSign(timestamp);
+            if (Objects.isNull(sign) || !sign.equals(signTarget)) {
                 throw new RuntimeException("钉钉推送消息，权限校验错误");
             }
             LOG.debug("接收到钉钉推送的消息: {}", body);
             String msg = body.getJSONObject("text").getString("content");
             String[] commands = msg.split(":");
-            if(ObjectUtils.isEmpty(commands[0]) ||
-                    ObjectUtils.isEmpty(commands[1])){
+            if (ObjectUtils.isEmpty(commands[0]) ||
+                    ObjectUtils.isEmpty(commands[1])) {
                 LOG.error("钉钉推送的消息格式不正确: {}", msg);
                 throw new RuntimeException("钉钉推送的消息格式不正确");
             }
-            switch (commands[0]){
+            switch (commands[0]) {
                 case "TOKEN":
                     applicationProperties.setAuthorization(commands[1].trim());
                 default:
                     break;
             }
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
 
     }
 
-    private boolean sendDingTalkMessage(DingTalkAlarm dingTalkAlarm){
+    private boolean sendDingTalkMessage(DingTalkAlarm dingTalkAlarm) {
         LinkedMultiValueMap<String, String> linkedMultiValueMap = new LinkedMultiValueMap<String, String>();
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(linkedMultiValueMap, headers);
-        try{
-            DingTalkAlarmResponse result = restTemplate.postForObject(applicationProperties.getDingUrl(), httpEntity, DingTalkAlarmResponse.class);
-            if(Objects.isNull(result)){
+        try {
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String sign = dingTalkSign(timestamp);
+            String params = String.format(DeviceService.DING_TALK_URL_PARAM,
+                    applicationProperties.getDingToken(),
+                    timestamp, sign);
+
+            DingTalkAlarmResponse result = restTemplate.postForObject(
+                    applicationProperties.getDingUrl() + params,
+                    httpEntity,
+                    DingTalkAlarmResponse.class);
+            if (Objects.isNull(result)) {
                 LOG.error("钉钉消息发送失败, 无返回");
                 return false;
             }
-            if(!DING_TALK_CODE_NORMAL.equals(result.getErrcode())){
+            if (!DING_TALK_CODE_NORMAL.equals(result.getErrcode())) {
                 LOG.error("钉钉消息发送失败, code: {}, msg: {}", result.getErrcode(), result.getErrmsg());
                 return false;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LOG.error("钉钉消息发送失败, 网络错误");
             e.printStackTrace();
             return false;
@@ -117,7 +139,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Scheduled(cron = "* 0/10 * * * ?")
-    public void syncStatus(){
+    public void syncStatus() {
         LinkedMultiValueMap<String, String> linkedMultiValueMap = new LinkedMultiValueMap<String, String>();
         linkedMultiValueMap.add("sn", "");
         linkedMultiValueMap.add("groupid", "");
@@ -131,15 +153,15 @@ public class DeviceServiceImpl implements DeviceService {
         linkedMultiValueMap.add("endInput", "");
         HttpHeaders httpHeaders = getHttpHeaders();
         httpHeaders.set("Authorization", authorization);
-        try{
+        try {
             HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(linkedMultiValueMap, httpHeaders);
             String result = restTemplate.postForObject(applicationProperties.getStatusUrl(), httpEntity, String.class);
             LOG.debug("调用设备API，返回消息：{}", result);
-            DeviceApiResponse deviceApiResponse= objectMapper.readValue(result, DeviceApiResponse.class);
-            if(!API_CODE_NORMAL.equals(deviceApiResponse.getCode())){
+            DeviceApiResponse deviceApiResponse = objectMapper.readValue(result, DeviceApiResponse.class);
+            if (!API_CODE_NORMAL.equals(deviceApiResponse.getCode())) {
                 // TODO 状态异常 发钉钉消息
                 sendDingTalkMessage(DingTalkAlarm.of(DingTalkAlarmEnum.TOKEN_EXPIRE));
-            }else{
+            } else {
                 List<DeviceStatus> deviceStatusList = deviceApiResponse.getData().getList();
                 // TODO 存入设备状态
                 List<Device> devices = deviceStatusList.stream().map(d -> {
@@ -150,16 +172,16 @@ public class DeviceServiceImpl implements DeviceService {
                     device.setStatus(parseStatus(d.getMtList()).status());
                     return device;
                 }).collect(Collectors.toList());
-                deviceMapper.saveAll(devices);
+                this.saveBatch(devices);
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public DeviceStatusEnum parseStatus(List<LineStatus> mtList){
-        for(int i=0; i<mtList.size(); i++){
-            if(DeviceService.API_LINE_STATUS_STANDBY.equals(mtList.get(i).getWkstoptime())){
+    public DeviceStatusEnum parseStatus(List<LineStatus> mtList) {
+        for (int i = 0; i < mtList.size(); i++) {
+            if (DeviceService.API_LINE_STATUS_STANDBY.equals(mtList.get(i).getWkstoptime())) {
                 return DeviceStatusEnum.WORKING;
             }
         }

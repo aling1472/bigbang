@@ -8,11 +8,13 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 public class ApplicationProperties {
-    public String authorization;
+    private String authorization;
 
-    public String statusUrl;
+    private String statusUrl;
 
-    public String dingUrl;
+    private String dingUrl;
 
-    public String appSecret;
+    private String dingToken;
+
+    private String appSecret;
 }

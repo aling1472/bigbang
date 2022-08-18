@@ -30,9 +30,9 @@ public class DeviceController {
         return ApiResponse.ok(deviceList);
     }
 
-    @GetMapping(value="/api/test")
-    public ApiResponse test(){
-        return ApiResponse.ok(deviceService.getStatus("1"));
+    @GetMapping(value="/api/test/{id}")
+    public ApiResponse test(@PathVariable int id){
+        return ApiResponse.ok(deviceService.getStatus(id));
     }
 
     @PostMapping(value="/api/dingtalk/msg")

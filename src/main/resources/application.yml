@@ -22,3 +22,4 @@ application:
     status-url: ${DEVICE_STATUS_URL}
     ding-url: ${DING_TALK_URL}
     app-secret: ${DING_TALK_SECRET}
+    ding-token: ${DING_TALK_TOKEN}
