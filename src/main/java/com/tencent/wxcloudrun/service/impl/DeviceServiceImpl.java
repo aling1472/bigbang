@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tencent.wxcloudrun.config.ApplicationProperties;
 import com.tencent.wxcloudrun.dao.DeviceMapper;
 import com.tencent.wxcloudrun.dvo.*;
@@ -14,7 +15,6 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -77,14 +77,15 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
     }
 
     @Override
-    public void dingTalkCommand(String timestamp, String sign, JSONObject body) {
+    public void dingTalkCommand(String timestamp, String sign, ObjectNode body) {
         try {
             String signTarget = dingTalkSign(timestamp);
             if (Objects.isNull(sign) || !sign.equals(signTarget)) {
                 throw new RuntimeException("钉钉推送消息，权限校验错误");
             }
             LOG.debug("接收到钉钉推送的消息: {}", body);
-            String msg = body.getJSONObject("text").getString("content");
+
+            String msg = body.get("text").get("content").asText();
             String[] commands = msg.split(":");
             if (ObjectUtils.isEmpty(commands[0]) ||
                     ObjectUtils.isEmpty(commands[1])) {

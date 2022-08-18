@@ -3,13 +3,13 @@ package com.tencent.wxcloudrun.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tencent.wxcloudrun.config.ApiResponse;
 import com.tencent.wxcloudrun.dto.DevicesStatusRequest;
 import com.tencent.wxcloudrun.dvo.DeviceApiResponse;
 import com.tencent.wxcloudrun.model.Device;
 import com.tencent.wxcloudrun.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +38,7 @@ public class DeviceController {
     @PostMapping(value="/api/dingtalk/msg")
     public ApiResponse dingTalkMsgPush(@RequestHeader(value="timestamp", required=true) String timestamp,
                                        @RequestHeader(value="sign",  required=true) String sign,
-                                       @RequestBody JSONObject body){
+                                       @RequestBody ObjectNode body){
         deviceService.dingTalkCommand(timestamp,  sign, body);
         return ApiResponse.ok();
     }

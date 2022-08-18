@@ -1,8 +1,8 @@
 package com.tencent.wxcloudrun.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tencent.wxcloudrun.model.Device;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.util.List;
 
@@ -22,5 +22,5 @@ public interface DeviceService extends IService<Device> {
 
     Device getStatus(int id);
 
-    void dingTalkCommand(String timestamp, String sign, JSONObject body);
+    void dingTalkCommand(String timestamp, String sign, ObjectNode body);
 }
