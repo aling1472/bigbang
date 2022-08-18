@@ -39,8 +39,6 @@ import java.util.stream.Collectors;
 @Service
 public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implements DeviceService {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceServiceImpl.class);
-    @Autowired
-    DeviceMapper deviceMapper;
 
     @Autowired
     RestTemplate restTemplate;
@@ -56,7 +54,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
 
     @Override
     public List<Device> getList(String city, Integer department) {
-        return deviceMapper.findByCityAndDepartment(city, department);
+        return null;
     }
 
     @Override

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper
 public interface DeviceMapper extends BaseMapper<Device> {
-    @Select("select * from device where city = #{city} and department = #{department}")
-    List<Device> findByCityAndDepartment(@Param("city")String city, @Param("department")Integer department);
+   // @Select("select * from device where city = #{city} and department = #{department}")
+   // List<Device> findByCityAndDepartment(@Param("city")String city, @Param("department")Integer department);
 
 }
