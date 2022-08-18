@@ -166,7 +166,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device>  implem
                     device.setId(Integer.valueOf(d.getId()));
                     device.setSn(d.getSn());
                     device.setUpdatedAt(LocalDateTime.now());
-                    device.setStatus(parseStatus(d.getMtList()).status());
+                    device.setStatus(parseStatus(d.getWtList()).status());
                     return device;
                 }).collect(Collectors.toList());
                 this.saveBatch(devices);

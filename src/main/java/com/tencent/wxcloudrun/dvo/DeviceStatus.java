@@ -12,7 +12,7 @@ import java.util.List;
 
 @Data
 public class DeviceStatus {
-    private List<LineStatus> mtList;
+    private List<LineStatus> wtList;
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss", timezone = "GMT+8")
